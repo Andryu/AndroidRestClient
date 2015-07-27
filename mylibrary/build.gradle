@@ -1,0 +1,54 @@
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.1.0"
+
+    defaultConfig {
+        applicationId "com.sample.mylibrary"
+        minSdkVersion 8
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions{
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    //compile 'com.android.support:appcompat-v7:19.+'
+
+    // [Android] OkHTTP + Retrofit + RxAndroid で REST クライアントを実装する
+    // http://dev.classmethod.jp/smartphone/android/okhttp-retrofit-rxandroid/
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'io.reactivex:rxandroid:0.24.0'
+}
+
+task clearJar(type: Delete) {
+    delete 'build/libs/mylibrary.jar'
+}
+task copyLibs(type: Copy) {
+    configurations.compile.each {
+        from it.toString()
+        into 'libs'
+        exclude {
+            new File('libs', it.name).exists()
+        }
+    }
+}
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('release/')
+    include('classes.jar')
+    rename('classes.jar', 'mylibrary.jar')
+}
+makeJar.dependsOn(clearJar, build)
